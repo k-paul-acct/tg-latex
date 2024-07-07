@@ -1,0 +1,10 @@
+﻿services:
+  api:
+    build:
+      context: .
+      dockerfile: LatexView.Api/Dockerfile
+    environment:
+      - HTTP_PORTS=8080
+    ports:
+      - 8080:8080
+    shm_size: 256mb
