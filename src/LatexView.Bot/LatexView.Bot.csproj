@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MinimalTelegramBot" Version="0.0.30"/>
+    <PackageReference Include="MinimalTelegramBot" Version="0.0.31"/>
   </ItemGroup>
 
 </Project>
