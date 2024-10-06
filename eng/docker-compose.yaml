@@ -1,0 +1,23 @@
+﻿services:
+  api:
+    container_name: latex_view_api
+    build:
+      context: ../
+      dockerfile: src/LatexView.Api/Dockerfile
+    env_file: .env
+    environment:
+      - HTTP_PORTS=8080
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - DOTNET_ENVIRONMENT=${DOTNET_ENVIRONMENT}
+    ports:
+      - "8080:8080"
+    shm_size: 1024mb
+  bot:
+    container_name: latex_view_bot
+    build:
+      context: ../
+      dockerfile: src/LatexView.Bot/Dockerfile
+    env_file: .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - DOTNET_ENVIRONMENT=${DOTNET_ENVIRONMENT}

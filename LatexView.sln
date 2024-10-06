@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F70D9183-9106-404E-9376-0AB8C351C834}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LatexView.Api", "src\LatexView.Api\LatexView.Api.csproj", "{4FB94467-027C-4CC3-840E-B1157BDDB13B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LatexView.Bot", "src\LatexView.Bot\LatexView.Bot.csproj", "{35BE53B8-189B-48EB-9657-1DF736780DC0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4FB94467-027C-4CC3-840E-B1157BDDB13B} = {F70D9183-9106-404E-9376-0AB8C351C834}
+		{35BE53B8-189B-48EB-9657-1DF736780DC0} = {F70D9183-9106-404E-9376-0AB8C351C834}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4FB94467-027C-4CC3-840E-B1157BDDB13B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FB94467-027C-4CC3-840E-B1157BDDB13B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FB94467-027C-4CC3-840E-B1157BDDB13B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FB94467-027C-4CC3-840E-B1157BDDB13B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35BE53B8-189B-48EB-9657-1DF736780DC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35BE53B8-189B-48EB-9657-1DF736780DC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35BE53B8-189B-48EB-9657-1DF736780DC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35BE53B8-189B-48EB-9657-1DF736780DC0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

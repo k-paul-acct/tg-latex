@@ -62,7 +62,7 @@ app.MapPost("/api/convert", async (ConvertRequest request, LatexProcessManager p
                      """;
 
     Console.WriteLine(content);
-    
+
     var filePath = fileWorker.CreateFile(content, ".tex");
 
     try

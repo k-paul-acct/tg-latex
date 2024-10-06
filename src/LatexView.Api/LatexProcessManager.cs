@@ -7,6 +7,11 @@ public sealed class LatexProcessManager : IDisposable
 {
     private readonly CancellationTokenSource _cts = new(TimeSpan.FromSeconds(10));
 
+    public void Dispose()
+    {
+        _cts.Dispose();
+    }
+
     public async Task<string> ProcessFile(string filePath, bool whiteBackground, int ppi)
     {
         var pdfPath = await ProcessLatex(filePath);
@@ -24,7 +29,7 @@ public sealed class LatexProcessManager : IDisposable
     {
         using var proc = new Process();
         var directory = Path.GetDirectoryName(filePath);
-        
+
         proc.StartInfo.FileName = "lualatex";
         proc.StartInfo.Arguments = $"-shell-escape --output-format=pdf -output-directory={directory} {filePath}";
 
@@ -56,10 +61,5 @@ public sealed class LatexProcessManager : IDisposable
     {
         var path = Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException();
         Directory.Delete(path, true);
-    }
-
-    public void Dispose()
-    {
-        _cts.Dispose();
     }
 }
