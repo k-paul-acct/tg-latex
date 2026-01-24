@@ -1,22 +1,11 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER root
+﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-RUN dotnet nuget add source https://pkgs.dev.azure.com/tgbots/Telegram.Bot/_packaging/release/nuget/v3/index.json -n Telegram.Bot
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY src/LatexView.Bot/LatexView.Bot.csproj src/LatexView.Bot/
-RUN dotnet restore src/LatexView.Bot/LatexView.Bot.csproj
-COPY . .
-WORKDIR /src/src/LatexView.Bot
-RUN dotnet build LatexView.Bot.csproj -c $BUILD_CONFIGURATION -o /app/build
+COPY src/LatexView.Bot .
+RUN dotnet restore LatexView.Bot.csproj
+RUN dotnet publish LatexView.Bot.csproj -o out
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish LatexView.Bot.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/out .
 ENTRYPOINT ["dotnet", "LatexView.Bot.dll"]
