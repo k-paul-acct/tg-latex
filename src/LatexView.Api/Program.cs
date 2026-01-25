@@ -13,6 +13,7 @@ app.MapPost("/api/convert", async (
     ConvertRequest request,
     TmpFileWorker tmpFileWorker,
     LatexProcessManager processManager,
+    ILogger<Program> logger,
     CancellationToken cancellationToken) =>
 {
     var content =
@@ -51,8 +52,9 @@ app.MapPost("/api/convert", async (
     {
         return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
     }
-    catch
+    catch (Exception e)
     {
+        logger.LogError(e, message: null);
         return Results.BadRequest();
     }
 });

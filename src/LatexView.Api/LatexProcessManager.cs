@@ -58,14 +58,14 @@ public sealed class LatexProcessManager
         var background = whiteBackground ? "-background white -alpha remove -alpha off" : null;
         var startInfo = new ProcessStartInfo
         {
-            FileName = "magick",
+            FileName = "convert",
             Arguments = $"-density {ppi} {filePath} -quality 100 {background} {pngPath}",
             UseShellExecute = false,
             CreateNoWindow = true,
         };
 
         using var process = Process.Start(startInfo) ??
-                            throw new DataException("Failed to start magick process.");
+                            throw new DataException("Failed to start convert process.");
 
         await process.WaitForExitAsync(cancellationToken);
 
