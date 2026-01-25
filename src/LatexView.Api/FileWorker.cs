@@ -1,39 +1,60 @@
 namespace LatexView.Api;
 
-public class FileWorker
+public sealed class TmpFileWorker : IDisposable
 {
-    private readonly string _basePath;
+    private static readonly string TmpPath = Path.GetTempPath();
 
-    public FileWorker(string basePath)
+    private readonly string _basePath;
+    private bool _isInitialized;
+
+    public TmpFileWorker()
     {
-        _basePath = basePath;
+        var name = GenerateRandomName();
+        _basePath = Path.Combine(TmpPath, name);
+        _isInitialized = false;
     }
 
-    public string CreateFile(string content, string extension)
+    public string CreateFile(string content, string? extension = null)
     {
-        var folderPath = CreateTmpFolder();
+        EnsureTmpDirectory();
         var fileName = GenerateRandomName() + extension;
-        var filePath = Path.Combine(folderPath, fileName);
-
+        var filePath = Path.Combine(_basePath, fileName);
         File.WriteAllText(filePath, content);
-
         return filePath;
     }
 
-    private string CreateTmpFolder()
+    public void Dispose()
     {
-        var folderName = GenerateRandomName();
-        var path = Path.Combine(_basePath, folderName);
-        Directory.CreateDirectory(path);
+        if (_isInitialized)
+        {
+            Directory.Delete(_basePath, recursive: true);
+        }
+    }
 
-        return path;
+    private void EnsureTmpDirectory()
+    {
+        if (_isInitialized)
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(_basePath);
+        _isInitialized = true;
     }
 
     private static string GenerateRandomName()
     {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-0123456789_";
+
         Span<char> nameSpan = stackalloc char[16];
+
+        var startIdx = Random.Shared.Next(0, 52);
+        var endIdx = Random.Shared.Next(0, 52);
+
         Random.Shared.GetItems(chars, nameSpan);
-        return nameSpan.ToString();
+        nameSpan[0] = chars[startIdx];
+        nameSpan[^1] = chars[endIdx];
+
+        return new string(nameSpan);
     }
 }

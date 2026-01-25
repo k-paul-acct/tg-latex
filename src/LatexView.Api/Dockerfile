@@ -1,21 +1,11 @@
-﻿FROM latex-base AS base
-USER root
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY src/LatexView.Api/LatexView.Api.csproj src/LatexView.Api/
-RUN dotnet restore src/LatexView.Api/LatexView.Api.csproj
-COPY . .
-WORKDIR /src/src/LatexView.Api
-RUN dotnet build LatexView.Api.csproj -c $BUILD_CONFIGURATION -o /app/build
+COPY src .
+RUN dotnet restore LatexView.Api/LatexView.Api.csproj
+RUN dotnet publish LatexView.Api/LatexView.Api.csproj -o out
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish LatexView.Api.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/out .
 ENTRYPOINT ["dotnet", "LatexView.Api.dll"]
