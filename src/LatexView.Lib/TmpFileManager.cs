@@ -33,6 +33,15 @@ public sealed class TmpFileManager : IDisposable
         return file;
     }
 
+    public string CreateDirectory()
+    {
+        EnsureTmpDirectory();
+        var name = GenerateRandomName();
+        var path = Path.Combine(_basePath, name);
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
     public void Dispose()
     {
         if (_isInitialized)

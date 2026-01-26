@@ -5,9 +5,10 @@ using LatexView.Lib;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton(new LatexTemplateProvider());
-builder.Services.AddTransient<LatexCompiler>();
-builder.Services.AddTransient<TmpFileManager>();
-builder.Services.AddTransient<FileConverter>();
+builder.Services.AddScoped<GitRepositoryClonner>();
+builder.Services.AddScoped<LatexCompiler>();
+builder.Services.AddScoped<TmpFileManager>();
+builder.Services.AddScoped<FileConverter>();
 
 builder.Services.AddValidation();
 
@@ -55,6 +56,37 @@ app.MapPost("/api/compile/body", async (
         cts.CancelAfter(TimeSpan.FromSeconds(30));
 
         var pdfPath = await compiler.CompileFromTextAsBody(request.Body, LatexCompiler.Options.Default, cts.Token);
+        return Results.File(pdfPath, MediaTypeNames.Application.Pdf);
+    }
+    catch (OperationCanceledException)
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+    catch (Exception e)
+    {
+        logger.LogError(e, message: null);
+        return Results.BadRequest();
+    }
+});
+
+app.MapPost("/api/compile/git", async (
+    CompileGitRequest request,
+    TmpFileManager tmpFileManager,
+    GitRepositoryClonner clonner,
+    LatexCompiler compiler,
+    ILogger<Program> logger,
+    CancellationToken cancellationToken) =>
+{
+    try
+    {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(30));
+
+        var sshKeyPath = request.SshKey is not null
+            ? tmpFileManager.CreateFile(request.SshKey, extension: null)
+            : null;
+        var repoPath = await clonner.Clone(request.Uri, sshKeyPath, cancellationToken);
+        var pdfPath = await compiler.CompileProject(repoPath, cts.Token);
         return Results.File(pdfPath, MediaTypeNames.Application.Pdf);
     }
     catch (OperationCanceledException)

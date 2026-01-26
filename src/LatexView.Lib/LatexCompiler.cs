@@ -20,7 +20,22 @@ public sealed class LatexCompiler
         CancellationToken cancellationToken = default)
     {
         var texPath = _tmpFileManager.CreateFile(text, ".tex");
-        return Compile(texPath, _tmpFileManager.DirectoryPath, cancellationToken);
+        return Compile(texPath, cancellationToken);
+    }
+
+    public Task<string> CompileProject(
+        string projectPath,
+        CancellationToken cancellationToken = default)
+    {
+        foreach (var file in Directory.EnumerateFiles(projectPath, "*.tex", SearchOption.AllDirectories))
+        {
+            if (Path.GetFileName(file) == "main.tex")
+            {
+                return Compile(file, cancellationToken);
+            }
+        }
+
+        throw new DataException($"The 'main.tex' file was not found in the project '{projectPath}'.");
     }
 
     public Task<string> CompileFromTextAsFormula(
@@ -74,15 +89,16 @@ public sealed class LatexCompiler
 
     private static async Task<string> Compile(
         string filePath,
-        string outputDirectory,
         CancellationToken cancellationToken)
     {
+        var dirPath = Path.GetDirectoryName(filePath) ?? "./";
         var startInfo = new ProcessStartInfo
         {
             FileName = "lualatex",
-            Arguments = $"--output-directory={outputDirectory} --no-shell-escape --halt-on-error {filePath}",
+            Arguments = $"--output-directory={dirPath} --no-shell-escape --halt-on-error {filePath}",
             UseShellExecute = false,
             CreateNoWindow = true,
+            WorkingDirectory = dirPath,
         };
 
         using var process = Process.Start(startInfo) ??
@@ -95,7 +111,7 @@ public sealed class LatexCompiler
             throw new DataException($"Failed to compile LaTeX file '{filePath}'.");
         }
 
-        return Path.Combine(outputDirectory, Path.ChangeExtension(filePath, ".pdf"));
+        return Path.Combine(dirPath, Path.ChangeExtension(filePath, ".pdf"));
     }
 
     public sealed class Options
