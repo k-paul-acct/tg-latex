@@ -1,18 +1,20 @@
-namespace LatexView.Api;
+namespace LatexView.Lib;
 
-public sealed class TmpFileWorker : IDisposable
+public sealed class TmpFileManager : IDisposable
 {
     private static readonly string TmpPath = Path.GetTempPath();
 
     private readonly string _basePath;
     private bool _isInitialized;
 
-    public TmpFileWorker()
+    public TmpFileManager()
     {
         var name = GenerateRandomName();
         _basePath = Path.Combine(TmpPath, name);
         _isInitialized = false;
     }
+
+    public string DirectoryPath => _basePath;
 
     public string CreateFile(string content, string? extension = null)
     {
@@ -21,6 +23,14 @@ public sealed class TmpFileWorker : IDisposable
         var filePath = Path.Combine(_basePath, fileName);
         File.WriteAllText(filePath, content);
         return filePath;
+    }
+
+    public FileStream CreateFile(string name)
+    {
+        EnsureTmpDirectory();
+        var filePath = Path.Combine(_basePath, name);
+        var file = File.Create(filePath);
+        return file;
     }
 
     public void Dispose()

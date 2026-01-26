@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="TexTemplates\formula.tex" LogicalName="TexTemplates/formula.tex" />
+    <EmbeddedResource Include="TexTemplates\body.tex" LogicalName="TexTemplates/body.tex" />
+  </ItemGroup>
+
 </Project>
