@@ -13,7 +13,7 @@ public sealed class GitRepositoryClonner
     }
 
     public async Task<string> Clone(
-        string uri,
+        string remote,
         string? sshKeyPath = null,
         CancellationToken cancellationToken = default)
     {
@@ -21,24 +21,43 @@ public sealed class GitRepositoryClonner
         var startInfo = new ProcessStartInfo
         {
             FileName = "git",
-            Arguments = $"clone --depth 1 \"{uri}\" {outputDirectory}",
             UseShellExecute = false,
             CreateNoWindow = true,
         };
 
+        startInfo.ArgumentList.AddRange("clone", "--depth", "1", remote, outputDirectory);
+
         if (sshKeyPath is not null)
         {
-            startInfo.Environment["GIT_SSH_COMMAND"] = $"ssh -i {sshKeyPath} -o IdentitiesOnly=yes -o StrictHostKeyChecking=no";
+            startInfo.Environment["GIT_SSH_COMMAND"] =
+                $"ssh -i {sshKeyPath} -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes";
         }
+
+        startInfo.Environment["GIT_TERMINAL_PROMPT"] = "0";
 
         using var process = Process.Start(startInfo) ??
                             throw new DataException("Failed to start 'git' process.");
 
-        await process.WaitForExitAsync(cancellationToken);
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+            }
+
+            throw;
+        }
 
         if (process.ExitCode != 0)
         {
-            throw new DataException($"Failed to clone git repository '{uri}'.");
+            throw new DataException($"Failed to clone git repository '{remote}'.");
         }
 
         return outputDirectory;

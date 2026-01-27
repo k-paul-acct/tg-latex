@@ -16,20 +16,38 @@ public sealed class TmpFileManager : IDisposable
 
     public string DirectoryPath => _basePath;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
     public string CreateFile(string content, string? extension = null)
     {
         EnsureTmpDirectory();
         var fileName = GenerateRandomName() + extension;
         var filePath = Path.Combine(_basePath, fileName);
-        File.WriteAllText(filePath, content);
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.Create,
+            Access = FileAccess.ReadWrite,
+            Share = FileShare.None,
+            UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite, // TODO: Windows support.
+        };
+        using var file = new FileStream(filePath, options);
+        using var writer = new StreamWriter(file);
+        writer.Write(content);
         return filePath;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
     public FileStream CreateFile(string name)
     {
         EnsureTmpDirectory();
         var filePath = Path.Combine(_basePath, name);
-        var file = File.Create(filePath);
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.Create,
+            Access = FileAccess.ReadWrite,
+            Share = FileShare.None,
+            UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite, // TODO: Windows support.
+        };
+        var file = new FileStream(filePath, options);
         return file;
     }
 

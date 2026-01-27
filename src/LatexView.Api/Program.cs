@@ -1,8 +1,11 @@
 using System.Net.Mime;
 using LatexView.Api.Contracts.Requests;
 using LatexView.Lib;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<CompilerOptions>(builder.Configuration.GetSection("CompilerOptions"));
 
 builder.Services.AddSingleton(new LatexTemplateProvider());
 builder.Services.AddScoped<GitRepositoryClonner>();
@@ -19,12 +22,13 @@ app.MapPost("/api/compile/formula", async (
     LatexCompiler compiler,
     FileConverter converter,
     ILogger<Program> logger,
+    IOptionsMonitor<CompilerOptions> options,
     CancellationToken cancellationToken) =>
 {
     try
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(TimeSpan.FromSeconds(30));
+        cts.CancelAfter(options.CurrentValue.Timeout);
 
         var compilerOptions = new LatexCompiler.Options { BorderWidth = request.BorderWidth };
         var pdfPath = await compiler.CompileFromTextAsFormula(request.Formula, compilerOptions, cts.Token);
@@ -48,12 +52,13 @@ app.MapPost("/api/compile/body", async (
     CompileBodyRequest request,
     LatexCompiler compiler,
     ILogger<Program> logger,
+    IOptionsMonitor<CompilerOptions> options,
     CancellationToken cancellationToken) =>
 {
     try
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(TimeSpan.FromSeconds(30));
+        cts.CancelAfter(options.CurrentValue.Timeout);
 
         var pdfPath = await compiler.CompileFromTextAsBody(request.Body, LatexCompiler.Options.Default, cts.Token);
         return Results.File(pdfPath, MediaTypeNames.Application.Pdf);
@@ -75,18 +80,19 @@ app.MapPost("/api/compile/git", async (
     GitRepositoryClonner clonner,
     LatexCompiler compiler,
     ILogger<Program> logger,
+    IOptionsMonitor<CompilerOptions> options,
     CancellationToken cancellationToken) =>
 {
     try
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(TimeSpan.FromSeconds(30));
+        cts.CancelAfter(options.CurrentValue.Timeout);
 
         var sshKeyPath = request.SshKey is not null
             ? tmpFileManager.CreateFile(request.SshKey, extension: null)
             : null;
-        var repoPath = await clonner.Clone(request.Uri, sshKeyPath, cancellationToken);
-        var pdfPath = await compiler.CompileProject(repoPath, cts.Token);
+        var repoPath = await clonner.Clone(request.Remote, sshKeyPath, cancellationToken);
+        var pdfPath = await compiler.CompileProject(repoPath, request.MainPath, cts.Token);
         return Results.File(pdfPath, MediaTypeNames.Application.Pdf);
     }
     catch (OperationCanceledException)

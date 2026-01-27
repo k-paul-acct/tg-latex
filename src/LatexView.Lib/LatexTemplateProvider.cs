@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace LatexView.Lib;
 
 public sealed class LatexTemplateProvider
@@ -20,7 +18,7 @@ public sealed class LatexTemplateProvider
                 continue;
             }
 
-            using var reader = new StreamReader(resource, Encoding.UTF8);
+            using var reader = new StreamReader(resource);
             var key = Path.GetFileNameWithoutExtension(name);
             var template = reader.ReadToEnd();
             _templates[key] = new LatexTemplate(template);

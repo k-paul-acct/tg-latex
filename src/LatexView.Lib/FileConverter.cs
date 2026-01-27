@@ -11,24 +11,51 @@ public sealed class FileConverter
         Options options,
         CancellationToken cancellationToken = default)
     {
-        var density = options.Ppi != 0
-            ? $"-density {options.Ppi}"
-            : null;
-        var background = options.BackgroundColor is not null
-            ? $"-background {options.BackgroundColor} -alpha remove -alpha off"
-            : null;
-        var startInfo = new ProcessStartInfo
+        var startInfo = new ProcessStartInfo()
         {
             FileName = "convert",
-            Arguments = $"{density} {inputPath} -quality 100 {background} {outputPath}",
             UseShellExecute = false,
             CreateNoWindow = true,
         };
 
+        if (options.Ppi != 0)
+        {
+            startInfo.ArgumentList.AddRange("-density", options.Ppi.ToString());
+        }
+
+        startInfo.ArgumentList.AddRange(
+            inputPath,
+            "-quality", "100");
+
+        if (options.BackgroundColor is not null)
+        {
+            startInfo.ArgumentList.AddRange(
+                "-background", options.BackgroundColor,
+                "-alpha", "remove",
+                "-alpha", "off");
+        }
+
+        startInfo.ArgumentList.Add(outputPath);
+
         using var process = Process.Start(startInfo) ??
                             throw new DataException("Failed to start 'convert' process.");
 
-        await process.WaitForExitAsync(cancellationToken);
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+            }
+
+            throw;
+        }
 
         if (process.ExitCode != 0)
         {

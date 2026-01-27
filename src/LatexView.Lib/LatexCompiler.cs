@@ -1,6 +1,5 @@
 using System.Data;
 using System.Diagnostics;
-using System.Text;
 
 namespace LatexView.Lib;
 
@@ -25,9 +24,12 @@ public sealed class LatexCompiler
 
     public Task<string> CompileProject(
         string projectPath,
+        string? mainPath = null,
         CancellationToken cancellationToken = default)
     {
-        foreach (var file in Directory.EnumerateFiles(projectPath, "*.tex", SearchOption.AllDirectories))
+        var searchPath = mainPath is null ? projectPath : Path.Combine(projectPath, mainPath);
+
+        foreach (var file in Directory.EnumerateFiles(searchPath, "*.tex", SearchOption.AllDirectories))
         {
             if (Path.GetFileName(file) == "main.tex")
             {
@@ -62,7 +64,7 @@ public sealed class LatexCompiler
         void WriteBody()
         {
             using var inputFile = _tmpFileManager.CreateFile("text.txt");
-            using var writer = new StreamWriter(inputFile, Encoding.UTF8);
+            using var writer = new StreamWriter(inputFile);
 
             foreach (var c in body)
             {
@@ -95,16 +97,33 @@ public sealed class LatexCompiler
         var startInfo = new ProcessStartInfo
         {
             FileName = "lualatex",
-            Arguments = $"--output-directory={dirPath} --no-shell-escape --halt-on-error {filePath}",
             UseShellExecute = false,
             CreateNoWindow = true,
             WorkingDirectory = dirPath,
         };
 
+        startInfo.ArgumentList.AddRange(
+            $"--output-directory={dirPath}", "--no-shell-escape", "--halt-on-error", "--interaction=batchmode", filePath);
+
         using var process = Process.Start(startInfo) ??
                             throw new DataException("Failed to start 'lualatex' process.");
 
-        await process.WaitForExitAsync(cancellationToken);
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+            }
+
+            throw;
+        }
 
         if (process.ExitCode != 0)
         {

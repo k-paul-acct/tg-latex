@@ -1,25 +1,19 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
 namespace LatexView.Api.Contracts;
 
-public sealed partial class ColorAttribute : ValidationAttribute
+public sealed partial class ColorAttribute : NullHandlingPolicyValidationAttribute
 {
     [GeneratedRegex("^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$")]
     private static partial Regex ColorRegex();
 
-    public override bool IsValid(object? value)
+    protected override bool IsValidNotNull(object value)
     {
-        return value switch
+        if (value is not string s)
         {
-            string s => ValidateColor(s),
-            null => true,
-            _ => false,
-        };
-    }
+            return false;
+        }
 
-    private static bool ValidateColor(string s)
-    {
         if (s is "white" or "black")
         {
             return true;
