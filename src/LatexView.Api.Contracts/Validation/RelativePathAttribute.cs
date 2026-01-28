@@ -1,4 +1,4 @@
-namespace LatexView.Api.Contracts;
+namespace LatexView.Api.Contracts.Validation;
 
 public sealed class RelativePathAttribute : NullHandlingPolicyValidationAttribute
 {

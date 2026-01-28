@@ -35,7 +35,7 @@ app.MapPost("/api/compile/formula", async (
         var converterOptions = new FileConverter.Options { BackgroundColor = request.BackgroundColor, Ppi = request.Ppi };
         var pngPath = Path.ChangeExtension(pdfPath, ".png");
         await converter.Convert(pdfPath, pngPath, converterOptions, cts.Token);
-        return Results.File(pngPath, MediaTypeNames.Image.Png);
+        return Results.File(pngPath, MediaTypeNames.Image.Png, "image.png");
     }
     catch (OperationCanceledException)
     {
@@ -61,7 +61,7 @@ app.MapPost("/api/compile/body", async (
         cts.CancelAfter(options.CurrentValue.Timeout);
 
         var pdfPath = await compiler.CompileFromTextAsBody(request.Body, LatexCompiler.Options.Default, cts.Token);
-        return Results.File(pdfPath, MediaTypeNames.Application.Pdf);
+        return Results.File(pdfPath, MediaTypeNames.Application.Pdf, "document.pdf");
     }
     catch (OperationCanceledException)
     {
@@ -93,7 +93,7 @@ app.MapPost("/api/compile/git", async (
             : null;
         var repoPath = await clonner.Clone(request.Remote, sshKeyPath, cancellationToken);
         var pdfPath = await compiler.CompileProject(repoPath, request.MainPath, cts.Token);
-        return Results.File(pdfPath, MediaTypeNames.Application.Pdf);
+        return Results.File(pdfPath, MediaTypeNames.Application.Pdf, "document.pdf");
     }
     catch (OperationCanceledException)
     {

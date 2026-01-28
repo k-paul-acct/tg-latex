@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace LatexView.Api.Contracts;
+namespace LatexView.Api.Contracts.Validation;
 
 public sealed partial class PemFormatAttribute : NullHandlingPolicyValidationAttribute
 {

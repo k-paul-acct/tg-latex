@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LatexView.Lib\LatexView.Lib.csproj" />
+    <ProjectReference Include="..\LatexView.Api.Contracts\LatexView.Api.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

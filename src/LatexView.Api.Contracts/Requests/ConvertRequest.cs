@@ -1,3 +1,5 @@
+using LatexView.Api.Contracts.Validation;
+
 namespace LatexView.Api.Contracts.Requests;
 
 public sealed record CompileFormulaRequest(

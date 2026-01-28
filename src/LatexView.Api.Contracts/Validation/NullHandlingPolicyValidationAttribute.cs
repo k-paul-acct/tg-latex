@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LatexView.Api.Contracts;
+namespace LatexView.Api.Contracts.Validation;
 
 public abstract class NullHandlingPolicyValidationAttribute : ValidationAttribute
 {

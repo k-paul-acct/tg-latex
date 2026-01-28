@@ -8,7 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MinimalTelegramBot" Version="0.0.40"/>
+    <PackageReference Include="MinimalTelegramBot" Version="0.0.40" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="9.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LatexView.Lib\LatexView.Lib.csproj" />
+    <ProjectReference Include="..\LatexView.Api.Contracts\LatexView.Api.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
